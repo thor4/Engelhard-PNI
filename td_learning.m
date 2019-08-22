@@ -4,28 +4,44 @@ alpha=.25; % learning rate
 gamma = 0.9; % discount rate
 lambda=1; % reward magnitude (strength)
 lambda_duration = 1; % reward duration, length reward is active
+% dopaminergic firing rate of a single neuron is surrogate of prediction 
+% error (rpe)
+% 5 Hz baseline, then order of magnitude increase during reward processing
+% will focus on the Type 1 neurons identified by Cohen et al., 2012
+% you get 5Hz by randomly choosing from normal dist with mean of 5, std 1
 
 trainN = 1000; % number of training examples
 
-time_steps=5; % how long from stimulus to reward
+time_steps=50; % trial length
+% assume each time step is 100ms, presample: [0-500ms], sample:
+% [501-2500ms], delay: [2501-3500ms], reward: 3501ms, post-reward:
+% [3600-5000ms]. pre: [0-4], sample: [5-25], delay: [25-35], reward: 35,
+% post-reward: [36-50]
 
 %vector to keep track of current time-step. which is active and which are 
 % inactive. represents current time
 time_representation = zeros(1,time_steps); 
 % keep track of values for each time step. prediction weights
 value_prediction = zeros(1,time_steps); 
+% keep track of whether a spike occurs for each time step
+spikes = zeros(1,time_steps); 
 % keep record of each value for all trials
 value_prediction_mat = zeros(trainN,time_steps);
 prediction_error_mat=zeros(trainN,time_steps);
+spikes_mat = zeros(trainN,time_steps);
 
 for tN = 1:trainN % which trial
-    last_prediction=0; %no prediction of reward when starting out
+%     last_prediction=0; %no prediction of reward when starting out
     for timeN = 1:time_steps % which time step of current trial
-        if (timeN==5) %reward time
+        if (timeN==35) %reward time
             current_reward = lambda;
+            %randomly choose from normal dist with mean of 5, std of 1
+            spikes(timeN) = normrnd(5,1)*2; %one order of magnitude higher
+%%%% LEFT OFF HERE%%%%
         else % no reward
             current_reward = 0;
         end
+       
         time_representation = 0.*time_representation; % reset to 0
         if (timeN>10)
             time_representation(timeN) = 1; %first stimulus
